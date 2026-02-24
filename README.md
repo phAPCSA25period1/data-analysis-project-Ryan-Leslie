@@ -24,8 +24,8 @@ By the end, you will produce insights and answer your original question using yo
 ## 🎯 Your Task
 You will:
 
-1. **Choose a dataset** (teacher provided or public).  
-2. **Write a guiding question** for your dataset.  
+1. **Choose a dataset** (teacher provided or public). - https://runestone.academy/ns/books/published/csawesome2/external/_static/datasets/pokemon.csv  
+2. **Write a guiding question** for your dataset. - Does a Pokémon with multiple types make it stronger than other Pokémon with fewer types?  
 3. **Design a Java class** with ≥ 3 attributes.  
 4. **Use `Scanner` to read a CSV file**, parse rows, and construct objects.  
 5. **Store all objects** in an array or ArrayList.  
