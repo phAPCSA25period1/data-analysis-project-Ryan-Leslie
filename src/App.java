@@ -18,36 +18,97 @@ public class App {
     public static void main(String[] args) {
 
         // TODO: Update this with your CSV file path
-        File file = new File("data/your_dataset.csv");
+        File file = new File("data/pokemon.csv");
 
-        // TODO: Create an array of Data objects to store data
+        // create an array to hold the records we will read from the CSV
+        // the size here is arbitrary; you can adjust it or switch to a
+        // collection (ArrayList) once you know how many rows are in your file.
+        Data[] dataList = new Data[1000];
+        int recordCount = 0; // keeps track of how many entries we've added
 
+        // read file using Scanner and populate the dataList array
+        try (java.util.Scanner in = new java.util.Scanner(file)) {
+            if (in.hasNextLine()) {
+                in.nextLine(); // skip header row
+            }
+            while (in.hasNextLine() && recordCount < dataList.length) {
+                String line = in.nextLine();
+                String[] parts = line.split(",");
+                if (parts.length < 3) {
+                    continue; // skip malformed lines
+                }
+                // first three columns: number,name,type1
+                int number = 0;
+                try {
+                    number = Integer.parseInt(parts[0].trim());
+                } catch (NumberFormatException nfe) {
+                    // leave as 0
+                }
+                String pokeName = parts[1].trim();
+                String type1 = parts[2].trim();
+                dataList[recordCount++] = new Data(number, pokeName, type1);
+            }
+        } catch (java.io.FileNotFoundException fnf) {
+            System.err.println("CSV file not found: " + file.getPath());
+            return;
+        }
 
-        // TODO: Read file using Scanner
-        // - Skip header if needed
-        // - Loop through rows
-        // - Split each line by commas
-        // - Convert text to numbers when needed
-        // - Create new Data objects
-        // - Add to your array
+        // simple analysis methods (min, max, average of 'number' field)
+        double minVal = findMinNumber(dataList, recordCount);
+        double maxVal = findMaxNumber(dataList, recordCount);
+        double avgVal = computeAverageNumber(dataList, recordCount);
 
+        // print insights
+        System.out.println("Rows loaded: " + recordCount);
+        System.out.println("min number = " + minVal);
+        System.out.println("max number = " + maxVal);
+        System.out.println("avg number = " + avgVal + "\n");
 
-        // TODO: Call your analysis methods
-        // Example:
-        // double maxValue = findMaxValue(dataList);
-        // double average = computeAverageValue(dataList);
+        // a placeholder answer for guiding question
+        System.out.println("Guiding question answer: <your analysis here>");
 
-
-        // TODO: Print insights
-        // - Number of rows loaded
-        // - Min, max, average, or any other findings
-        // - Final answer to your guiding question
-
-
-        // OPTIONAL TODO:
-        // Add user interaction:
-        // Ask the user what kind of analysis they want to see
     }
 
+    /**
+     * Finds the minimum "number" in the data array (ignoring nulls).
+     */
+    public static double findMinNumber(Data[] list, int count) {
+        if (count == 0) return 0;
+        double min = Double.MAX_VALUE;
+        for (int i = 0; i < count; i++) {
+            if (list[i] != null && list[i].getNumber() < min) {
+                min = list[i].getNumber();
+            }
+        }
+        return min == Double.MAX_VALUE ? 0 : min;
+    }
+
+    /**
+     * Finds the maximum "number" in the data array (ignoring nulls).
+     */
+    public static double findMaxNumber(Data[] list, int count) {
+        if (count == 0) return 0;
+        double max = Double.MIN_VALUE;
+        for (int i = 0; i < count; i++) {
+            if (list[i] != null && list[i].getNumber() > max) {
+                max = list[i].getNumber();
+            }
+        }
+        return max == Double.MIN_VALUE ? 0 : max;
+    }
+
+    /**
+     * Computes the average of the "number" field in the data array.
+     */
+    public static double computeAverageNumber(Data[] list, int count) {
+        if (count == 0) return 0;
+        double sum = 0;
+        for (int i = 0; i < count; i++) {
+            if (list[i] != null) {
+                sum += list[i].getNumber();
+            }
+        }
+        return sum / count;
+    }
 
 }
