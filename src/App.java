@@ -34,38 +34,62 @@ public class App {
             while (in.hasNextLine() && recordCount < dataList.length) {
                 String line = in.nextLine();
                 String[] parts = line.split(",");
-                if (parts.length < 3) {
+                if (parts.length < 6) {
                     continue; // skip malformed lines
                 }
-                // first three columns: number,name,type1
+                // columns: 0=Number,1=Pokemon,2=Type 1,3=Type 2,4=HP,5=Attack,...
                 int number = 0;
                 try {
                     number = Integer.parseInt(parts[0].trim());
                 } catch (NumberFormatException nfe) {
-                    // leave as 0
+                    // ignore
                 }
                 String pokeName = parts[1].trim();
                 String type1 = parts[2].trim();
-                dataList[recordCount++] = new Data(number, pokeName, type1);
+                String type2 = parts[3].trim();
+                int attack = 0;
+                try {
+                    attack = Integer.parseInt(parts[5].trim());
+                } catch (NumberFormatException nfe) {
+                    // default 0
+                }
+                dataList[recordCount++] = new Data(number, pokeName, type1, type2, attack);
             }
         } catch (java.io.FileNotFoundException fnf) {
             System.err.println("CSV file not found: " + file.getPath());
             return;
         }
 
+        // guiding question text
+        String guidingQuestion = "Are Pokémon with one typing more powerful (attack stat) than Pokémon with two typings?";
+
         // simple analysis methods (min, max, average of 'number' field)
         double minVal = findMinNumber(dataList, recordCount);
         double maxVal = findMaxNumber(dataList, recordCount);
         double avgVal = computeAverageNumber(dataList, recordCount);
 
+        // new analysis for guiding question
+        double avgAttackSingle = computeAverageAttackByTypeCount(dataList, recordCount, 1);
+        double avgAttackDual = computeAverageAttackByTypeCount(dataList, recordCount, 2);
+        String guidance;
+        if (avgAttackSingle > avgAttackDual) {
+            guidance = "Yes – single-type Pokémon have higher average attack (" + avgAttackSingle + " vs " + avgAttackDual + ").";
+        } else if (avgAttackSingle < avgAttackDual) {
+            guidance = "No – dual-type Pokémon have higher average attack (" + avgAttackDual + " vs " + avgAttackSingle + ").";
+        } else {
+            guidance = "They have equal average attack (" + avgAttackSingle + ").";
+        }
+
         // print insights
+        System.out.println("Guiding question: " + guidingQuestion + "\n");
         System.out.println("Rows loaded: " + recordCount);
         System.out.println("min number = " + minVal);
         System.out.println("max number = " + maxVal);
         System.out.println("avg number = " + avgVal + "\n");
 
-        // a placeholder answer for guiding question
-        System.out.println("Guiding question answer: <your analysis here>");
+        System.out.println("Avg attack (single-type): " + avgAttackSingle);
+        System.out.println("Avg attack (dual-type): " + avgAttackDual + "\n");
+        System.out.println("Answer: " + guidance);
 
     }
 
@@ -109,6 +133,33 @@ public class App {
             }
         }
         return sum / count;
+    }
+
+    /**
+     * Computes the average attack value for Pokémon with a given number
+     * of typings (1 or 2). Rows with other counts are ignored.
+     *
+     * @param list  array of Data objects
+     * @param count number of valid entries in array
+     * @param typeCount number of typings to filter by (1 or 2)
+     * @return average attack stat for matching entries (0 if none)
+     */
+    public static double computeAverageAttackByTypeCount(Data[] list, int count, int typeCount) {
+        if (count == 0) return 0;
+        double sum = 0;
+        int matched = 0;
+        for (int i = 0; i < count; i++) {
+            Data d = list[i];
+            if (d == null) continue;
+            int types = 0;
+            if (d.getType1() != null && !d.getType1().isEmpty()) types++;
+            if (d.getType2() != null && !d.getType2().isEmpty()) types++;
+            if (types == typeCount) {
+                sum += d.getAttack();
+                matched++;
+            }
+        }
+        return matched == 0 ? 0 : sum / matched;
     }
 
 }
